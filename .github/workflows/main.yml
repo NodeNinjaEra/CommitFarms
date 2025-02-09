@@ -1,0 +1,49 @@
+name: Auto Commit
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+      - cron: '*/2 * * * *'
+  workflow_dispatch: 
+
+permissions:
+  contents: write 
+
+env:
+  GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+  GIT_USER_NAME: NodeNinjaEra
+
+jobs:
+  script_auto_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Pull latest changes
+        run: |
+          git pull origin main
+
+      - name: Run scripts
+        run: |
+          SCRIPTS=("arbitrum.sh" "axelar.sh" "base.sh" "bsc.sh" "celestia.sh" "cosmos.sh" "ethereum.sh" "evmos.sh" "filecoin.sh" "fuse.sh" "lava.sh" "near.sh" "osmosis.sh" "solana.sh" "stargaze.sh" "starknet.sh")
+          for script in "${SCRIPTS[@]}"; do
+            chmod +x "$script"
+            ./"$script"
+          done
+
+      - name: Configure Git identity
+        run: |
+          git config user.email "$GIT_USER_EMAIL"
+          git config user.name "$GIT_USER_NAME"
+
+      - name: Commit changes
+        run: |
+          git add -A
+          git commit -m "$(shuf -n1 -e "🔥 Hotfix" "✨ Feature" "🚀 Upgrade" "🛠️ Fix" "🔧 Refactor" "🔍 Investigate" "💡 Improve" "📦 Update" "📈 Optimize" "💬 Comment" | awk '{print $0}') arbitrum network"
+
+      - name: Push changes
+        run: |
+          git push origin main
